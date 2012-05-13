@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-3.0.xsd
+       http://www.springframework.org/schema/jdbc
+       http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+
+
+	<bean id="greyhoundDatasource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver.class.name}" />
+		<property name="url"
+			value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+	
+	<bean id="hibernateProperties"
+		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="properties">
+			<props>
+				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
+				<prop key="hibernate.show_sql">false</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="hibernateSessionFactory"
+		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource" ref="greyhoundDatasource" />
+		<property name="mappingResources">
+			<list>
+				<value>com/vgs/greyhound/model/domain/Page.hbm.xml</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<ref bean="hibernateProperties" />
+		</property>
+	</bean>
+
+	<bean id="txManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="hibernateSessionFactory" />
+	</bean>
+
+	<bean id="greyhoundFacade" class="com.vgs.greyhound.model.facade.GreyhoundFacade">
+		<property name="pageService" ref="pageService" />
+		<property name="securityService" ref="securityService" />
+	</bean>
+
+	<!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean 
+		below) -->
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<!-- the transactional semantics... -->
+		<tx:attributes>
+			<!-- all methods starting with 'get' are read-only -->
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="retrieve*" read-only="true" />
+			<tx:method name="releaseConnection" propagation="NEVER" />
+			<!-- other methods use the default transaction settings (see below) -->
+			<tx:method name="*" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+
+	<!-- ensure that the above transactional advice runs for any execution of 
+		an operation defined in the service layer -->
+	<aop:config>
+		<aop:pointcut id="allServiceMethods"
+			expression="execution(* com.vgs.greyhound.model.service.*.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="allServiceMethods" />
+	</aop:config>
+
+	<bean id="pageService" class="com.vgs.greyhound.model.service.impl.PageServiceImpl">
+		<property name="pageDao" ref="pageDao" />
+	</bean>
+	
+	<bean id="securityService" class="com.vgs.greyhound.model.service.impl.SecurityServiceImpl">
+		<property name="securityDao" ref="securityDao" />
+	</bean>
+	
+	<bean id="pageDao" class="com.vgs.greyhound.model.dao.impl.PageDaoHibernateImpl">
+		<property name="sessionFactory" ref="hibernateSessionFactory" />
+	</bean>
+	
+	<bean id="securityDao" class="${security.dao.impl}">
+		<property name="sessionFactory" ref="hibernateSessionFactory" />
+	</bean>
+
+</beans>

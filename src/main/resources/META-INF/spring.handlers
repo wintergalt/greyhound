@@ -1,0 +1,2 @@
+http\://www.springframework.org/schema/tx=org.springframework.transaction.config.TxNamespaceHandler
+http\://www.springframework.org/schema/aop=org.springframework.aop.config.AopNamespaceHandler

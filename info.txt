@@ -1,0 +1,15 @@
+Mercurial Information
+ 
+URL: https://wintergalt@bitbucket.org/wintergalt/greyhound
+
+Retrieve changes
+
+1) hg pull https://wintergalt@bitbucket.org/wintergalt/greyhound
+2) hg update
+
+
+Commit changes
+
+1) hg commit
+2) hg push https://wintergalt@bitbucket.org/wintergalt/greyhound
+

@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+      "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+          "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.vgs.greyhound.model.domain">
+
+	<class name="Page" table="pages" lazy="false">
+		<id name="pageId" column="PAGE_ID">
+			<!-- When using 'native' as the generator, hibernate selects 'identity', 
+				'sequence' or 'hilo' depending on the capabilities of the underlying database. 
+				In Derby, it will fallback to 'hilo' -->
+			<!-- <generator class="hilo"> -->
+			<!-- <param name="table">hibernate_unique_key</param> -->
+			<!-- <param name="column">next_hi</param> -->
+			<!-- </generator> -->
+			<generator class="increment"></generator>
+		</id>
+
+		<property name="title" type="string" not-null="true" />
+
+		<!-- <property name="namespace" type="string" not-null="true"/> -->
+
+		<property name="category" column="category" type="boolean"
+			not-null="true" />
+
+		<component name="content" class="Content" lazy="false">
+			<property name="text" column="CONTENT" type="text" />
+		</component>
+
+<!--		<one-to-one name="parent" class="Page" lazy="false" />-->
+
+		<many-to-one name="parent" class="Page" lazy="false"
+			column="parent_id" />
+		
+		<set name="children" lazy="false" inverse="true" cascade="all-delete-orphan">
+			<key column="parent_id" />
+			<one-to-many class="Page"/>
+		</set>
+	</class>
+
+</hibernate-mapping>

@@ -1,0 +1,11 @@
+
+syntax: regexp
+^src/main/java/com/vgs/greyhound/h2$
+^src/main/java/com/vgs/greyhound/derby$
+\.form$
+\.db$
+^\.classpath$
+^\.project$
+^\.settings
+\.log$
+^target$
